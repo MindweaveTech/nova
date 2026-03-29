@@ -14,7 +14,6 @@
   --matrix-speech: 0, 212, 255;
 }
 
-/* Light mode — deeper, richer colors for visibility on bright backgrounds */
 body.light {
   --cyan: 0, 150, 200;
   --blue: 0, 90, 200;
@@ -36,405 +35,236 @@ body {
   font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
   -webkit-app-region: drag;
   user-select: none;
-  cursor: pointer;
 }
 
 /* ===================== HOLOGRAM CONTAINER ===================== */
 .hologram {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-app-region: drag;
   cursor: grab;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.hologram:hover { transform: scale(1.05); }
-.hologram:active { transform: scale(0.95); }
-
-/* ===================== AMBIENT GLOW ===================== */
-.ambient {
-  position: absolute;
+/* ===================== THE BUBBLE ===================== */
+.bubble {
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  pointer-events: none;
-}
-
-.a1 {
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(var(--cyan), 0.06) 0%, transparent 70%);
-  animation: ambientFloat 6s ease-in-out infinite;
-}
-
-.a2 {
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(var(--blue), 0.03) 0%, transparent 60%);
-  animation: ambientFloat 8s ease-in-out infinite reverse;
-}
-
-@keyframes ambientFloat {
-  0%, 100% { transform: scale(1) translate(0, 0); opacity: 1; }
-  33% { transform: scale(1.05) translate(2px, -2px); opacity: 0.8; }
-  66% { transform: scale(0.95) translate(-2px, 1px); opacity: 1; }
-}
-
-/* ===================== CORE ===================== */
-.core {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--white), 0.95) 0%, rgba(var(--cyan), 0.8) 30%, rgba(var(--blue), 0.3) 60%, transparent 70%);
-  box-shadow:
-    0 0 15px rgba(var(--cyan), 0.8),
-    0 0 30px rgba(var(--cyan), 0.4),
-    0 0 60px rgba(var(--blue), 0.2),
-    0 0 100px rgba(var(--blue), 0.1);
-  z-index: 10;
-  animation: coreBreathe 4s ease-in-out infinite;
+  position: relative;
   -webkit-app-region: no-drag;
   cursor: pointer;
+
+  /* Glass-like underwater bubble */
+  background:
+    radial-gradient(circle at 35% 30%, rgba(var(--white), 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(var(--cyan), 0.06) 0%, rgba(var(--blue), 0.03) 60%, transparent 70%);
+
+  border: 1px solid rgba(var(--cyan), 0.15);
+
+  box-shadow:
+    inset 0 -8px 20px rgba(var(--cyan), 0.06),
+    inset 0 4px 12px rgba(var(--white), 0.04),
+    0 0 30px rgba(var(--cyan), 0.08),
+    0 0 60px rgba(var(--blue), 0.04);
+
+  /* Slow underwater float */
+  animation: bubbleFloat 6s ease-in-out infinite;
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.core-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--white), 1) 0%, rgba(var(--cyan), 0.6) 50%, transparent 70%);
-  animation: coreFlicker 5s ease-in-out infinite;
-}
-
-.core-flare {
+/* Specular highlight — the little shine spot */
+.bubble-shine {
   position: absolute;
-  top: -4px;
-  left: -4px;
-  width: 40px;
-  height: 40px;
+  top: 18%;
+  left: 22%;
+  width: 28%;
+  height: 22%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--white), 0.3) 0%, transparent 50%);
-  animation: flareRotate 10s linear infinite;
-}
-
-@keyframes coreBreathe {
-  0%, 100% { transform: scale(1); }
-  30% { transform: scale(1.08); }
-  60% { transform: scale(1.15); }
-  80% { transform: scale(1.05); }
-}
-
-@keyframes coreFlicker {
-  0%, 100% { opacity: 1; }
-  33% { opacity: 0.9; }
-  66% { opacity: 0.95; }
-  78% { opacity: 0.85; }
-  82% { opacity: 1; }
-}
-
-@keyframes flareRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ===================== RINGS ===================== */
-.ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.ring-1 {
-  width: 70px;
-  height: 70px;
-  border-top-color: rgba(var(--cyan), 0.8);
-  border-right-color: rgba(var(--cyan), 0.2);
-  border-bottom-color: rgba(var(--cyan), 0.6);
-  box-shadow: 0 0 12px rgba(var(--cyan), 0.15), inset 0 0 12px rgba(var(--cyan), 0.05);
-  animation: jellyDrift 5s ease-in-out infinite;
-}
-
-.ring-2 {
-  width: 105px;
-  height: 105px;
-  border-top-color: rgba(var(--cyan), 0.5);
-  border-left-color: rgba(var(--blue), 0.2);
-  border-bottom-color: rgba(var(--blue), 0.4);
-  box-shadow: 0 0 16px rgba(var(--blue), 0.1), inset 0 0 16px rgba(var(--blue), 0.03);
-  animation: jellyDriftReverse 7s ease-in-out infinite;
-}
-
-.ring-3 {
-  width: 140px;
-  height: 140px;
-  border-top-color: rgba(var(--blue), 0.35);
-  border-right-color: rgba(var(--blue), 0.12);
-  border-left-color: rgba(var(--blue), 0.25);
-  box-shadow: 0 0 20px rgba(var(--blue), 0.06);
-  animation: jellyDrift 9s ease-in-out infinite;
-}
-
-.ring-4 {
-  width: 175px;
-  height: 175px;
-  border-top-color: rgba(var(--blue), 0.15);
-  border-bottom-color: rgba(var(--blue), 0.1);
-  box-shadow: 0 0 25px rgba(var(--blue), 0.03);
-  animation: jellyDriftReverse 11s ease-in-out infinite;
-}
-
-@keyframes jellyDrift {
-  0% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(100deg) scale(1.02); }
-  50% { transform: rotate(180deg) scale(0.98); }
-  75% { transform: rotate(280deg) scale(1.01); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-@keyframes jellyDriftReverse {
-  0% { transform: rotate(360deg) scale(1); }
-  25% { transform: rotate(260deg) scale(1.03); }
-  50% { transform: rotate(180deg) scale(0.97); }
-  75% { transform: rotate(80deg) scale(1.02); }
-  100% { transform: rotate(0deg) scale(1); }
-}
-
-/* ===================== ARC SEGMENTS ===================== */
-.arc {
-  position: absolute;
-  border-radius: 50%;
-  border: 2px solid transparent;
-}
-
-.arc-1 {
-  width: 88px;
-  height: 88px;
-  border-top-color: rgba(var(--cyan), 0.5);
-  border-right-color: rgba(var(--cyan), 0.3);
-  animation: arcSpin1 6s linear infinite;
-}
-
-.arc-2 {
-  width: 122px;
-  height: 122px;
-  border-bottom-color: rgba(var(--cyan), 0.3);
-  border-left-color: rgba(var(--cyan), 0.15);
-  animation: arcSpin2 8s linear infinite reverse;
-}
-
-.arc-3 {
-  width: 156px;
-  height: 156px;
-  border-top-color: rgba(var(--blue), 0.2);
-  animation: arcSpin3 12s linear infinite;
-}
-
-@keyframes arcSpin1 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes arcSpin2 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes arcSpin3 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* ===================== PULSE ===================== */
-.pulse {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--cyan), 0.1) 0%, transparent 70%);
-  animation: pulseGlow 4s ease-in-out infinite;
-  z-index: -1;
-}
-
-.pulse-delayed {
-  animation-delay: 2s;
-  opacity: 0.5;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  40% { transform: scale(1.8); opacity: 0.15; }
-  60% { transform: scale(2); opacity: 0.08; }
-}
-
-/* ===================== PARTICLES ===================== */
-.particle {
-  position: absolute;
-  width: 2.5px;
-  height: 2.5px;
-  border-radius: 50%;
-  background: rgba(var(--cyan), 0.9);
-  box-shadow: 0 0 6px rgba(var(--cyan), 0.6), 0 0 12px rgba(var(--cyan), 0.2);
-  transition: all 0.5s ease;
-}
-
-.p1 { animation: fly1 6s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p2 { animation: fly2 8s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p3 { animation: fly3 7s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p4 { animation: fly4 9s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p5 { animation: fly5 5.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p6 { animation: fly6 6.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p7 { animation: fly7 7.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-.p8 { animation: fly8 10s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-@keyframes fly1 {
-  0%   { transform: rotate(0deg) translateX(48px) translateY(0); opacity: 0.9; }
-  25%  { transform: rotate(95deg) translateX(52px) translateY(3px); opacity: 1; }
-  50%  { transform: rotate(175deg) translateX(46px) translateY(-2px); opacity: 0.5; }
-  75%  { transform: rotate(270deg) translateX(50px) translateY(4px); opacity: 0.8; }
-  100% { transform: rotate(360deg) translateX(48px) translateY(0); opacity: 0.9; }
-}
-@keyframes fly2 {
-  0%   { transform: rotate(60deg) translateX(65px); opacity: 0.7; }
-  33%  { transform: rotate(185deg) translateX(60px) translateY(-4px); opacity: 1; }
-  66%  { transform: rotate(300deg) translateX(68px) translateY(3px); opacity: 0.4; }
-  100% { transform: rotate(420deg) translateX(65px); opacity: 0.7; }
-}
-@keyframes fly3 {
-  0%   { transform: rotate(120deg) translateX(42px) translateY(2px); opacity: 0.9; }
-  50%  { transform: rotate(310deg) translateX(38px) translateY(-3px); opacity: 0.4; }
-  100% { transform: rotate(480deg) translateX(42px) translateY(2px); opacity: 0.9; }
-}
-@keyframes fly4 {
-  0%   { transform: rotate(200deg) translateX(78px) translateY(-2px); opacity: 0.4; }
-  40%  { transform: rotate(350deg) translateX(74px) translateY(4px); opacity: 0.7; }
-  100% { transform: rotate(560deg) translateX(78px) translateY(-2px); opacity: 0.4; }
-}
-@keyframes fly5 {
-  0%   { transform: rotate(300deg) translateX(55px); opacity: 0.6; }
-  50%  { transform: rotate(478deg) translateX(50px) translateY(5px); opacity: 1; }
-  100% { transform: rotate(660deg) translateX(55px); opacity: 0.6; }
-}
-@keyframes fly6 {
-  0%   { transform: rotate(150deg) translateX(70px) translateY(3px); opacity: 0.3; }
-  50%  { transform: rotate(338deg) translateX(66px) translateY(-4px); opacity: 0.7; }
-  100% { transform: rotate(510deg) translateX(70px) translateY(3px); opacity: 0.3; }
-}
-@keyframes fly7 {
-  0%   { transform: rotate(30deg) translateX(85px); opacity: 0.5; }
-  50%  { transform: rotate(210deg) translateX(80px) translateY(3px); opacity: 0.2; }
-  100% { transform: rotate(390deg) translateX(85px); opacity: 0.5; }
-}
-@keyframes fly8 {
-  0%   { transform: rotate(250deg) translateX(92px); opacity: 0.2; }
-  50%  { transform: rotate(430deg) translateX(88px) translateY(-3px); opacity: 0.5; }
-  100% { transform: rotate(610deg) translateX(92px); opacity: 0.2; }
-}
-
-/* ===================== BUBBLES ===================== */
-.bubbles {
-  position: absolute;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  overflow: hidden;
+  background: radial-gradient(circle, rgba(var(--white), 0.35) 0%, rgba(var(--white), 0.08) 50%, transparent 70%);
+  animation: shineShift 6s ease-in-out infinite;
   pointer-events: none;
-  z-index: 5;
 }
 
-.bubble {
-  position: absolute;
-  bottom: 50%;
-  left: 50%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%,
-    rgba(var(--cyan), 0.25),
-    rgba(var(--cyan), 0.08) 50%,
-    transparent 70%
-  );
-  border: 0.5px solid rgba(var(--cyan), 0.12);
-  opacity: 0;
-  will-change: transform, opacity;
-}
-
-.b1  { width: 6px;  height: 6px;  animation: bubbleRise 8s  ease-in-out 0s    infinite; }
-.b2  { width: 4px;  height: 4px;  animation: bubbleRise 9s  ease-in-out 0.8s  infinite; }
-.b3  { width: 8px;  height: 8px;  animation: bubbleRise 11s ease-in-out 2s    infinite; }
-.b4  { width: 3px;  height: 3px;  animation: bubbleRise 7s  ease-in-out 1.2s  infinite; }
-.b5  { width: 5px;  height: 5px;  animation: bubbleRise 10s ease-in-out 3.5s  infinite; }
-.b6  { width: 7px;  height: 7px;  animation: bubbleRise 12s ease-in-out 5s    infinite; }
-.b7  { width: 4px;  height: 4px;  animation: bubbleRise 8.5s ease-in-out 1.8s infinite; }
-.b8  { width: 5px;  height: 5px;  animation: bubbleRise 9.5s ease-in-out 4.2s infinite; }
-.b9  { width: 3px;  height: 3px;  animation: bubbleRise 7.5s ease-in-out 6s   infinite; }
-.b10 { width: 6px;  height: 6px;  animation: bubbleRise 11s ease-in-out 2.8s  infinite; }
-
-@keyframes bubbleRise {
-  0% {
-    transform: translate(-50%, 0) scale(0.3);
-    opacity: 0;
+/* Slow organic float — like a bubble gently drifting underwater */
+@keyframes bubbleFloat {
+  0%, 100% {
+    transform: translateY(0px) scaleX(1) scaleY(1);
   }
-  10% {
-    opacity: 0.6;
-    transform: translate(calc(-50% + 8px), -10px) scale(0.6);
-  }
-  30% {
-    opacity: 0.8;
-    transform: translate(calc(-50% - 12px), -25px) scale(0.85);
+  25% {
+    transform: translateY(-4px) scaleX(1.02) scaleY(0.98);
   }
   50% {
-    opacity: 0.6;
-    transform: translate(calc(-50% + 6px), -45px) scale(1);
+    transform: translateY(-2px) scaleX(0.98) scaleY(1.02);
   }
-  70% {
-    opacity: 0.4;
-    transform: translate(calc(-50% - 8px), -60px) scale(0.9);
-  }
-  90% {
-    opacity: 0.1;
-    transform: translate(calc(-50% + 4px), -72px) scale(0.7);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -80px) scale(0.4);
+  75% {
+    transform: translateY(-5px) scaleX(1.01) scaleY(0.99);
   }
 }
 
-/* State-specific bubble colors */
+@keyframes shineShift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  50% { transform: translate(2px, 1px) scale(1.1); opacity: 1; }
+}
+
+/* ===================== STATE: MONITORING (idle, subtle) ===================== */
+.hologram.monitoring .bubble,
+.hologram.idle .bubble {
+  animation: bubbleFloat 6s ease-in-out infinite;
+}
+
+/* ===================== STATE: BOOTING ===================== */
+.hologram.booting .bubble {
+  border-color: rgba(0, 255, 220, 0.3);
+  box-shadow:
+    inset 0 -8px 20px rgba(0, 255, 220, 0.1),
+    0 0 40px rgba(0, 255, 220, 0.15),
+    0 0 80px rgba(var(--cyan), 0.08);
+  animation: bubbleFloat 3s ease-in-out infinite, bubbleBoot 1.5s ease-in-out infinite;
+}
+
+@keyframes bubbleBoot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.hologram.booting ~ .status-text {
+  color: rgba(0, 255, 220, 0.8);
+  text-shadow: 0 0 8px rgba(0, 255, 220, 0.3);
+}
+
+/* ===================== STATE: LISTENING ===================== */
 .hologram.listening .bubble {
-  background: radial-gradient(circle at 30% 30%, rgba(var(--green), 0.3), rgba(var(--green), 0.1) 50%, transparent 70%);
-  border-color: rgba(var(--green), 0.15);
+  border-color: rgba(var(--green), 0.25);
+
+  background:
+    radial-gradient(circle at 35% 30%, rgba(var(--white), 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(var(--green), 0.08) 0%, rgba(var(--cyan), 0.04) 60%, transparent 70%);
+
+  box-shadow:
+    inset 0 -8px 20px rgba(var(--green), 0.1),
+    inset 0 4px 12px rgba(var(--white), 0.05),
+    0 0 35px rgba(var(--green), 0.12),
+    0 0 70px rgba(var(--green), 0.06);
+
+  animation: bubbleFloat 4s ease-in-out infinite, bubbleListen 2s ease-in-out infinite;
 }
 
+@keyframes bubbleListen {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  25% { transform: scaleX(1.03) scaleY(0.97); }
+  50% { transform: scaleX(0.97) scaleY(1.03); }
+  75% { transform: scaleX(1.02) scaleY(0.98); }
+}
+
+.hologram.listening ~ .status-text {
+  color: rgba(var(--green), 0.8);
+  text-shadow: 0 0 8px rgba(var(--green), 0.3);
+}
+
+/* ===================== STATE: THINKING ===================== */
 .hologram.thinking .bubble {
-  background: radial-gradient(circle at 30% 30%, rgba(var(--purple), 0.3), rgba(var(--purple), 0.1) 50%, transparent 70%);
-  border-color: rgba(var(--purple), 0.15);
-  animation-duration: 5s !important;
+  border-color: rgba(var(--purple), 0.25);
+
+  background:
+    radial-gradient(circle at 35% 30%, rgba(var(--white), 0.2) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(var(--purple), 0.1) 0%, rgba(80, 60, 255, 0.04) 60%, transparent 70%);
+
+  box-shadow:
+    inset 0 -8px 20px rgba(var(--purple), 0.12),
+    inset 0 4px 12px rgba(var(--white), 0.05),
+    0 0 40px rgba(var(--purple), 0.15),
+    0 0 80px rgba(var(--purple), 0.06);
+
+  animation: bubbleFloat 3s ease-in-out infinite, bubbleThink 1s ease-in-out infinite;
 }
 
+@keyframes bubbleThink {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.04) rotate(1deg); }
+  50% { transform: scale(0.97) rotate(-1deg); }
+  75% { transform: scale(1.03) rotate(0.5deg); }
+}
+
+.hologram.thinking .bubble-shine {
+  animation: shineShift 2s ease-in-out infinite;
+}
+
+.hologram.thinking ~ .status-text {
+  color: rgba(var(--purple), 0.8);
+  text-shadow: 0 0 8px rgba(var(--purple), 0.3);
+}
+
+/* ===================== STATE: SPEAKING ===================== */
 .hologram.speaking .bubble {
-  background: radial-gradient(circle at 30% 30%, rgba(0, 230, 255, 0.35), rgba(var(--cyan), 0.12) 50%, transparent 70%);
-  border-color: rgba(0, 230, 255, 0.2);
-  animation-duration: 4s !important;
+  border-color: rgba(0, 230, 255, 0.3);
+
+  background:
+    radial-gradient(circle at 35% 30%, rgba(var(--white), 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(0, 230, 255, 0.12) 0%, rgba(var(--cyan), 0.05) 60%, transparent 70%);
+
+  box-shadow:
+    inset 0 -10px 25px rgba(0, 230, 255, 0.12),
+    inset 0 5px 15px rgba(var(--white), 0.06),
+    0 0 45px rgba(0, 230, 255, 0.2),
+    0 0 90px rgba(var(--cyan), 0.08);
+
+  animation: bubbleFloat 3s ease-in-out infinite, bubbleSpeak 0.5s ease-in-out infinite;
 }
 
+@keyframes bubbleSpeak {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  25% { transform: scaleX(1.05) scaleY(0.96); }
+  50% { transform: scaleX(0.96) scaleY(1.05); }
+  75% { transform: scaleX(1.04) scaleY(0.97); }
+}
+
+.hologram.speaking .bubble-shine {
+  animation: shineShift 1s ease-in-out infinite;
+  opacity: 1;
+}
+
+.hologram.speaking ~ .status-text {
+  color: rgba(0, 230, 255, 0.9);
+  text-shadow: 0 0 12px rgba(0, 230, 255, 0.4);
+}
+
+/* ===================== STATE: ERROR ===================== */
+.hologram.error .bubble {
+  border-color: rgba(255, 80, 80, 0.25);
+  box-shadow:
+    inset 0 -8px 20px rgba(255, 80, 80, 0.1),
+    0 0 35px rgba(255, 80, 80, 0.12);
+  animation: bubbleFloat 6s ease-in-out infinite, errorFlash 1.5s ease-in-out infinite;
+}
+
+.hologram.error ~ .status-text {
+  color: rgba(255, 80, 80, 0.8);
+  text-shadow: 0 0 8px rgba(255, 80, 80, 0.3);
+}
+
+@keyframes errorFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ===================== LIGHT MODE BUBBLE ===================== */
 body.light .bubble {
-  background: radial-gradient(circle at 30% 30%, rgba(var(--cyan), 0.15), rgba(var(--cyan), 0.05) 50%, transparent 70%);
-  border-color: rgba(var(--cyan), 0.1);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255, 0.5) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(var(--cyan), 0.08) 0%, rgba(var(--blue), 0.04) 60%, transparent 70%);
+  border-color: rgba(var(--cyan), 0.2);
+  box-shadow:
+    inset 0 -8px 20px rgba(var(--cyan), 0.06),
+    inset 0 4px 12px rgba(255,255,255, 0.1),
+    0 0 25px rgba(var(--cyan), 0.06);
 }
 
-/* ===================== SCANLINES ===================== */
-.scanlines {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(var(--cyan), 0.015) 3px,
-    rgba(var(--cyan), 0.015) 4px
-  );
-  animation: scanScroll 4s linear infinite;
-  pointer-events: none;
-  z-index: 20;
-  mix-blend-mode: screen;
-}
-
-@keyframes scanScroll {
-  from { transform: translateY(-4px); }
-  to { transform: translateY(4px); }
+body.light .bubble-shine {
+  background: radial-gradient(circle, rgba(255,255,255, 0.6) 0%, rgba(255,255,255, 0.15) 50%, transparent 70%);
 }
 
 /* ===================== STATUS TEXT ===================== */
@@ -449,6 +279,7 @@ body.light .bubble {
   transition: color 0.4s ease, text-shadow 0.4s ease;
 }
 
+/* ===================== METRICS ===================== */
 .metrics {
   display: flex;
   flex-direction: column;
@@ -465,6 +296,7 @@ body.light .bubble {
 }
 
 body.light .metrics { color: rgba(var(--cyan), 0.45); }
+body.light .status-text { color: rgba(var(--cyan), 0.6); }
 
 /* ===================== MATRIX LOG ===================== */
 .matrix-log {
@@ -493,43 +325,16 @@ body.light .metrics { color: rgba(var(--cyan), 0.45); }
   text-align: center;
 }
 
-.matrix-line.dim {
-  color: rgba(var(--matrix), 0.35);
-  text-shadow: none;
-}
+.matrix-line.dim { color: rgba(var(--matrix), 0.35); text-shadow: none; }
+.matrix-line.bright { color: rgba(var(--green), 0.9); text-shadow: 0 0 6px rgba(var(--green), 0.5); }
+.matrix-line.speech { color: rgba(var(--matrix-speech), 0.85); text-shadow: 0 0 6px rgba(var(--matrix-speech), 0.4); font-weight: 500; }
+.matrix-line.system { color: rgba(var(--purple), 0.55); text-shadow: 0 0 4px rgba(var(--purple), 0.2); font-size: 8px; }
 
-.matrix-line.bright {
-  color: rgba(var(--green), 0.9);
-  text-shadow: 0 0 6px rgba(var(--green), 0.5), 0 0 12px rgba(var(--green), 0.2);
-}
-
-.matrix-line.speech {
-  color: rgba(var(--matrix-speech), 0.85);
-  text-shadow: 0 0 6px rgba(var(--matrix-speech), 0.4), 0 0 12px rgba(var(--matrix-speech), 0.15);
-  font-weight: 500;
-}
-
-.matrix-line.system {
-  color: rgba(var(--purple), 0.55);
-  text-shadow: 0 0 4px rgba(var(--purple), 0.2);
-  font-size: 8px;
-}
-
-/* Light mode overrides — stronger opacity for visibility */
 body.light .matrix-line { color: rgba(var(--matrix), 0.85); text-shadow: none; }
 body.light .matrix-line.dim { color: rgba(var(--matrix), 0.5); }
 body.light .matrix-line.bright { color: rgba(var(--green), 1); text-shadow: none; }
 body.light .matrix-line.speech { color: rgba(var(--matrix-speech), 1); text-shadow: none; }
 body.light .matrix-line.system { color: rgba(var(--purple), 0.7); }
-
-/* Light mode — stronger glows replaced with solid visibility */
-body.light .core {
-  box-shadow: 0 0 10px rgba(var(--cyan), 0.5), 0 0 25px rgba(var(--cyan), 0.25);
-}
-body.light .status-text { color: rgba(var(--cyan), 0.6); }
-body.light .usage-text { color: rgba(var(--cyan), 0.4); }
-body.light .particle { box-shadow: 0 0 4px rgba(var(--cyan), 0.5); }
-body.light .scanlines { opacity: 0.3; }
 
 @keyframes matrixFade {
   0% { opacity: 0; transform: translateY(4px); }
@@ -538,6 +343,7 @@ body.light .scanlines { opacity: 0.3; }
   100% { opacity: 0; }
 }
 
+/* ===================== TRANSCRIPT ===================== */
 .transcript {
   position: absolute;
   bottom: 2px;
@@ -550,142 +356,4 @@ body.light .scanlines { opacity: 0.3; }
   text-overflow: ellipsis;
   -webkit-app-region: no-drag;
   transition: opacity 0.3s ease;
-}
-
-/* ===================== STATE: MONITORING (always-on, subtle) ===================== */
-.hologram.monitoring .core {
-  animation: coreBreathe 4s ease-in-out infinite;
-}
-
-.hologram.monitoring ~ .status-text {
-  color: rgba(var(--cyan), 0.35);
-}
-
-/* ===================== STATE: BOOTING ===================== */
-.hologram.booting .core {
-  animation: bootPulse 1.2s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(0, 255, 220, 0.95) 0%, rgba(var(--cyan), 0.5) 60%, transparent 70%);
-  box-shadow: 0 0 30px rgba(0, 255, 220, 0.7), 0 0 60px rgba(var(--cyan), 0.3);
-}
-.hologram.booting .ring-1 { animation: bootSpin 1.5s linear infinite; border-color: rgba(0, 255, 220, 0.6); }
-.hologram.booting .ring-2 { animation: bootSpin 2.5s linear infinite reverse; border-color: rgba(0, 220, 255, 0.4); }
-.hologram.booting .ring-3 { animation: bootSpin 3.5s linear infinite; border-color: rgba(var(--cyan), 0.3); }
-.hologram.booting .arc { border-color: rgba(0, 255, 220, 0.3); animation-duration: 2s; }
-.hologram.booting ~ .status-text { color: rgba(0, 255, 220, 0.8); text-shadow: 0 0 10px rgba(0, 255, 220, 0.3); }
-
-@keyframes bootPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
-@keyframes bootSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* ===================== STATE: LISTENING (owl-tracking) ===================== */
-.hologram.listening .core {
-  background: radial-gradient(circle, rgba(var(--white), 0.95) 0%, rgba(var(--green), 0.8) 30%, rgba(var(--cyan), 0.3) 60%, transparent 70%);
-  box-shadow: 0 0 25px rgba(var(--green), 0.8), 0 0 50px rgba(var(--green), 0.4), 0 0 100px rgba(var(--cyan), 0.15);
-  animation: owlTrack 2s ease-in-out infinite;
-}
-.hologram.listening .ring-1 {
-  border-top-color: rgba(var(--green), 0.8); border-bottom-color: rgba(var(--green), 0.8);
-  animation: owlRing 2.5s ease-in-out infinite;
-  box-shadow: 0 0 20px rgba(var(--green), 0.2), inset 0 0 20px rgba(var(--green), 0.08);
-}
-.hologram.listening .ring-2 { animation: owlRing 3.5s ease-in-out infinite reverse; border-top-color: rgba(var(--green), 0.5); }
-.hologram.listening .ring-3 { animation: owlRing 4.5s ease-in-out infinite; }
-.hologram.listening .arc-1 { border-color: rgba(var(--green), 0.4); animation-duration: 3s; }
-.hologram.listening .arc-2 { border-color: rgba(var(--green), 0.25); animation-duration: 4s; }
-.hologram.listening .pulse { background: radial-gradient(circle, rgba(var(--green), 0.12) 0%, transparent 70%); animation-duration: 1.5s; }
-.hologram.listening .particle { background: rgba(var(--green), 0.9); box-shadow: 0 0 8px rgba(var(--green), 0.6); animation-duration: 3s !important; }
-.hologram.listening .scanlines { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--green), 0.02) 2px, rgba(var(--green), 0.02) 3px); }
-.hologram.listening ~ .status-text { color: rgba(var(--green), 0.8); text-shadow: 0 0 8px rgba(var(--green), 0.3); }
-
-@keyframes owlTrack {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.1) translate(1px, -1px); }
-  50% { transform: scale(1.18); }
-  85% { transform: scale(1.12) translate(-1px, -1px); }
-}
-@keyframes owlRing {
-  0% { transform: rotate(0deg) scaleX(1) scaleY(1); }
-  25% { transform: rotate(95deg) scaleX(1.04) scaleY(0.96); }
-  50% { transform: rotate(180deg) scaleX(0.96) scaleY(1.04); }
-  75% { transform: rotate(270deg) scaleX(1.02) scaleY(0.98); }
-  100% { transform: rotate(360deg) scaleX(1) scaleY(1); }
-}
-
-/* ===================== STATE: THINKING (octopus chromatophores) ===================== */
-.hologram.thinking .core {
-  background: radial-gradient(circle, rgba(var(--white), 0.9) 0%, rgba(var(--purple), 0.8) 30%, rgba(80, 60, 255, 0.3) 60%, transparent 70%);
-  box-shadow: 0 0 30px rgba(var(--purple), 0.7), 0 0 60px rgba(var(--purple), 0.3);
-  animation: octoPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-.hologram.thinking .ring-1 { border-color: rgba(var(--purple), 0.7); animation: chromato 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-.hologram.thinking .ring-2 { border-color: rgba(120, 80, 255, 0.5); animation: chromato 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite reverse; }
-.hologram.thinking .ring-3 { border-color: rgba(80, 60, 255, 0.3); animation: chromato 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-.hologram.thinking .arc { border-color: rgba(var(--purple), 0.4); }
-.hologram.thinking .arc-1 { animation: bootSpin 1.5s linear infinite; }
-.hologram.thinking .arc-2 { animation: bootSpin 2s linear infinite reverse; }
-.hologram.thinking .pulse { background: radial-gradient(circle, rgba(var(--purple), 0.15) 0%, transparent 70%); animation-duration: 0.8s; }
-.hologram.thinking .particle { background: rgba(var(--purple), 0.9); box-shadow: 0 0 10px rgba(var(--purple), 0.7); animation-duration: 2s !important; }
-.hologram.thinking .scanlines { background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(var(--purple), 0.025) 2px, rgba(var(--purple), 0.025) 3px); animation-duration: 1s; }
-.hologram.thinking ~ .status-text { color: rgba(var(--purple), 0.8); text-shadow: 0 0 8px rgba(var(--purple), 0.3); }
-
-@keyframes octoPulse {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.2) rotate(5deg); }
-  50% { transform: scale(0.9) rotate(-3deg); }
-  75% { transform: scale(1.15) rotate(2deg); }
-}
-@keyframes chromato {
-  0% { transform: rotate(0deg) scaleX(1) scaleY(1); border-width: 1.5px; }
-  25% { transform: rotate(120deg) scaleX(1.1) scaleY(0.9); border-width: 2.5px; }
-  50% { transform: rotate(200deg) scaleX(0.9) scaleY(1.1); border-width: 1px; }
-  75% { transform: rotate(300deg) scaleX(1.05) scaleY(0.95); border-width: 2px; }
-  100% { transform: rotate(360deg) scaleX(1) scaleY(1); border-width: 1.5px; }
-}
-
-/* ===================== STATE: SPEAKING (hummingbird) ===================== */
-.hologram.speaking .core {
-  background: radial-gradient(circle, rgba(var(--white), 1) 0%, rgba(0, 230, 255, 0.9) 25%, rgba(var(--cyan), 0.5) 55%, transparent 70%);
-  box-shadow: 0 0 35px rgba(0, 230, 255, 0.9), 0 0 70px rgba(var(--cyan), 0.5), 0 0 140px rgba(var(--blue), 0.2);
-  animation: hummingCore 0.3s ease-in-out infinite;
-}
-.hologram.speaking .ring-1 {
-  border-color: rgba(0, 230, 255, 0.8);
-  animation: hummingRing 0.6s ease-in-out infinite;
-}
-.hologram.speaking .ring-2 { border-color: rgba(var(--cyan), 0.5); animation: hummingRing 0.9s ease-in-out infinite; }
-.hologram.speaking .ring-3 { border-color: rgba(var(--cyan), 0.3); animation: hummingRing 1.2s ease-in-out infinite; }
-.hologram.speaking .ring-4 { border-color: rgba(var(--blue), 0.2); animation: hummingRing 1.5s ease-in-out infinite; }
-.hologram.speaking .arc-1 { border-color: rgba(0, 230, 255, 0.6); animation: arcSpin1 2s linear infinite; }
-.hologram.speaking .arc-2 { border-color: rgba(var(--cyan), 0.4); animation: arcSpin2 3s linear infinite reverse; }
-.hologram.speaking .pulse { background: radial-gradient(circle, rgba(0, 230, 255, 0.18) 0%, transparent 70%); animation-duration: 0.4s; }
-.hologram.speaking .particle { animation-duration: 1.5s !important; background: rgba(0, 230, 255, 1); box-shadow: 0 0 12px rgba(0, 230, 255, 0.8); }
-.hologram.speaking .scanlines { animation-duration: 0.5s; }
-.hologram.speaking ~ .status-text { color: rgba(0, 230, 255, 0.9); text-shadow: 0 0 12px rgba(0, 230, 255, 0.4); }
-
-@keyframes hummingCore {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.2) rotate(2deg); }
-  50% { transform: scale(1.3); }
-  75% { transform: scale(1.15) rotate(-2deg); }
-}
-@keyframes hummingRing {
-  0%, 100% { transform: rotate(0deg) scaleX(1) scaleY(1); }
-  25% { transform: rotate(15deg) scaleX(1.08) scaleY(0.94); }
-  50% { transform: rotate(0deg) scaleX(0.94) scaleY(1.08); }
-  75% { transform: rotate(-15deg) scaleX(1.06) scaleY(0.96); }
-}
-
-/* ===================== STATE: ERROR ===================== */
-.hologram.error .core {
-  background: radial-gradient(circle, rgba(255, 80, 80, 0.95) 0%, rgba(255, 40, 40, 0.4) 60%, transparent 70%);
-  box-shadow: 0 0 30px rgba(255, 80, 80, 0.6);
-  animation: errorFlash 1s ease-in-out infinite;
-}
-.hologram.error .ring-1 { border-top-color: rgba(255, 80, 80, 0.7); border-bottom-color: rgba(255, 80, 80, 0.7); }
-.hologram.error .ring-2 { border-color: rgba(255, 60, 60, 0.3); }
-.hologram.error .particle { background: rgba(255, 80, 80, 0.8); box-shadow: 0 0 8px rgba(255, 80, 80, 0.5); }
-.hologram.error ~ .status-text { color: rgba(255, 80, 80, 0.8); text-shadow: 0 0 8px rgba(255, 80, 80, 0.3); }
-
-@keyframes errorFlash {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.9); }
 }

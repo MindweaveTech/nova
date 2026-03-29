@@ -389,9 +389,8 @@ function interrupt() {
   }
 }
 
-// Click the core to interrupt; drag the outer area to move window
-document.querySelector('.core').addEventListener('click', interrupt);
-hologram.addEventListener('dblclick', interrupt);
+// Click the bubble to interrupt; drag outer area to move window
+document.querySelector('.bubble').addEventListener('click', interrupt);
 
 window.nova.onToggleListen(() => {
   if (state === 'speaking') {
