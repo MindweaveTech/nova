@@ -10,6 +10,19 @@
   --green: 0, 255, 180;
   --purple: 160, 100, 255;
   --white: 255, 255, 255;
+  --matrix: 0, 255, 120;
+  --matrix-speech: 0, 212, 255;
+}
+
+/* Light mode — deeper, richer colors for visibility on bright backgrounds */
+body.light {
+  --cyan: 0, 150, 200;
+  --blue: 0, 90, 200;
+  --green: 0, 180, 120;
+  --purple: 120, 60, 220;
+  --white: 40, 40, 60;
+  --matrix: 0, 140, 80;
+  --matrix-speech: 0, 120, 180;
 }
 
 body {
@@ -370,8 +383,8 @@ body {
   font-family: 'Menlo', 'SF Mono', 'Courier New', monospace;
   font-size: 9px;
   line-height: 1.5;
-  color: rgba(0, 255, 120, 0.7);
-  text-shadow: 0 0 4px rgba(0, 255, 120, 0.3);
+  color: rgba(var(--matrix), 0.7);
+  text-shadow: 0 0 4px rgba(var(--matrix), 0.3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -382,26 +395,42 @@ body {
 }
 
 .matrix-line.dim {
-  color: rgba(0, 255, 120, 0.3);
+  color: rgba(var(--matrix), 0.35);
   text-shadow: none;
 }
 
 .matrix-line.bright {
-  color: rgba(0, 255, 180, 0.9);
-  text-shadow: 0 0 6px rgba(0, 255, 180, 0.5), 0 0 12px rgba(0, 255, 180, 0.2);
+  color: rgba(var(--green), 0.9);
+  text-shadow: 0 0 6px rgba(var(--green), 0.5), 0 0 12px rgba(var(--green), 0.2);
 }
 
 .matrix-line.speech {
-  color: rgba(0, 212, 255, 0.85);
-  text-shadow: 0 0 6px rgba(0, 212, 255, 0.4), 0 0 12px rgba(0, 212, 255, 0.15);
+  color: rgba(var(--matrix-speech), 0.85);
+  text-shadow: 0 0 6px rgba(var(--matrix-speech), 0.4), 0 0 12px rgba(var(--matrix-speech), 0.15);
   font-weight: 500;
 }
 
 .matrix-line.system {
-  color: rgba(var(--purple), 0.5);
+  color: rgba(var(--purple), 0.55);
   text-shadow: 0 0 4px rgba(var(--purple), 0.2);
   font-size: 8px;
 }
+
+/* Light mode overrides — stronger opacity for visibility */
+body.light .matrix-line { color: rgba(var(--matrix), 0.85); text-shadow: none; }
+body.light .matrix-line.dim { color: rgba(var(--matrix), 0.5); }
+body.light .matrix-line.bright { color: rgba(var(--green), 1); text-shadow: none; }
+body.light .matrix-line.speech { color: rgba(var(--matrix-speech), 1); text-shadow: none; }
+body.light .matrix-line.system { color: rgba(var(--purple), 0.7); }
+
+/* Light mode — stronger glows replaced with solid visibility */
+body.light .core {
+  box-shadow: 0 0 10px rgba(var(--cyan), 0.5), 0 0 25px rgba(var(--cyan), 0.25);
+}
+body.light .status-text { color: rgba(var(--cyan), 0.6); }
+body.light .usage-text { color: rgba(var(--cyan), 0.4); }
+body.light .particle { box-shadow: 0 0 4px rgba(var(--cyan), 0.5); }
+body.light .scanlines { opacity: 0.3; }
 
 @keyframes matrixFade {
   0% { opacity: 0; transform: translateY(4px); }

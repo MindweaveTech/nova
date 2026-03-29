@@ -407,6 +407,12 @@ window.nova.onSpeakingStarted(() => {
 
 window.nova.onSpeakingEnded(() => {});
 
+window.nova.onThemeChange((theme) => {
+  document.body.classList.toggle('light', theme === 'light');
+  console.log(`[THEME] Switched to ${theme} mode`);
+  matrixPush(`theme: ${theme}`, 'dim');
+});
+
 // =============================================
 // Init
 // =============================================

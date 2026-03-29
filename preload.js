@@ -12,4 +12,5 @@ contextBridge.exposeInMainWorld('nova', {
   onToggleListen: (callback) => ipcRenderer.on('nova:toggle-listen', callback),
   onSpeakingStarted: (callback) => ipcRenderer.on('nova:speaking-started', callback),
   onSpeakingEnded: (callback) => ipcRenderer.on('nova:speaking-ended', callback),
+  onThemeChange: (callback) => ipcRenderer.on('nova:theme', (_, theme) => callback(theme)),
 });

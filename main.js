@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -63,6 +63,15 @@ function createWindow() {
   mainWindow.webContents.on('console-message', (event, level, message) => {
     const tag = ['LOG', 'WARN', 'ERR'][level] || 'LOG';
     console.log(`[RENDERER:${tag}] ${message}`);
+  });
+
+  // Send initial theme + watch for changes
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.send('nova:theme', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+  });
+
+  nativeTheme.on('updated', () => {
+    mainWindow?.webContents.send('nova:theme', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
   });
 }
 
