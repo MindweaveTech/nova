@@ -11,7 +11,6 @@ let audioContext = null;
 let analyser = null;
 let silenceTimer = null;
 let isRecording = false;
-let monitoringRAF = null;
 let recordStartTime = 0;
 let queryCount = 0;
 let partialTimer = null;
@@ -167,8 +166,11 @@ async function startMonitoring() {
 
   setState('monitoring');
   matrixPush('vad.monitoring()', 'dim');
-  monitorLoop();
+  // Poll at ~16fps instead of 60fps to save CPU
+  monitorInterval = setInterval(monitorLoop, 60);
 }
+
+let monitorInterval = null;
 
 function monitorLoop() {
   if (state !== 'monitoring') return;
@@ -191,12 +193,10 @@ function monitorLoop() {
       speechConfirmTimer = null;
     }
   }
-
-  monitoringRAF = requestAnimationFrame(monitorLoop);
 }
 
 function stopMonitoring() {
-  if (monitoringRAF) { cancelAnimationFrame(monitoringRAF); monitoringRAF = null; }
+  if (monitorInterval) { clearInterval(monitorInterval); monitorInterval = null; }
   if (speechConfirmTimer) { clearTimeout(speechConfirmTimer); speechConfirmTimer = null; }
 }
 
@@ -389,7 +389,9 @@ function interrupt() {
   }
 }
 
-hologram.addEventListener('click', interrupt);
+// Click the core to interrupt; drag the outer area to move window
+document.querySelector('.core').addEventListener('click', interrupt);
+hologram.addEventListener('dblclick', interrupt);
 
 window.nova.onToggleListen(() => {
   if (state === 'speaking') {
@@ -422,7 +424,7 @@ async function updateMetrics() {
 }
 
 updateMetrics();
-setInterval(updateMetrics, 5000);
+setInterval(updateMetrics, 10000);
 
 window.nova.onThemeChange((theme) => {
   document.body.classList.toggle('light', theme === 'light');

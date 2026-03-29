@@ -32,15 +32,30 @@ RULES:
 - CPUs: ${os.cpus().length} cores (${os.cpus()[0]?.model?.trim()})
 - Memory: ${Math.round(os.totalmem() / 1073741824)}GB total`;
 
+const PREFS_PATH = path.join(app.getPath('userData'), 'nova-prefs.json');
+
+function loadPrefs() {
+  try { return JSON.parse(fs.readFileSync(PREFS_PATH, 'utf-8')); } catch { return {}; }
+}
+
+function savePrefs(prefs) {
+  const current = loadPrefs();
+  fs.writeFileSync(PREFS_PATH, JSON.stringify({ ...current, ...prefs }));
+}
+
 function createWindow() {
   const display = screen.getPrimaryDisplay();
   const { width, height } = display.workAreaSize;
+  const prefs = loadPrefs();
+
+  const x = prefs.x !== undefined ? prefs.x : width - 340;
+  const y = prefs.y !== undefined ? prefs.y : height - 420;
 
   mainWindow = new BrowserWindow({
     width: 320,
     height: 400,
-    x: width - 340,
-    y: height - 420,
+    x,
+    y,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
@@ -68,6 +83,12 @@ function createWindow() {
   // Send initial theme + watch for changes
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('nova:theme', nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
+  });
+
+  // Save position when user drags the window
+  mainWindow.on('moved', () => {
+    const [x, y] = mainWindow.getPosition();
+    savePrefs({ x, y });
   });
 
   nativeTheme.on('updated', () => {
