@@ -37,10 +37,10 @@ function createWindow() {
   const { width, height } = display.workAreaSize;
 
   mainWindow = new BrowserWindow({
-    width: 280,
-    height: 280,
-    x: width - 300,
-    y: height - 300,
+    width: 320,
+    height: 400,
+    x: width - 340,
+    y: height - 420,
     transparent: true,
     frame: false,
     alwaysOnTop: true,

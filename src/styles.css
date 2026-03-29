@@ -354,6 +354,62 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* ===================== MATRIX LOG ===================== */
+.matrix-log {
+  width: 280px;
+  height: 100px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 4px;
+  -webkit-app-region: no-drag;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 70%, transparent 100%);
+}
+
+.matrix-line {
+  font-family: 'Menlo', 'SF Mono', 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.5;
+  color: rgba(0, 255, 120, 0.7);
+  text-shadow: 0 0 4px rgba(0, 255, 120, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  animation: matrixFade 6s ease-out forwards;
+  letter-spacing: 0.3px;
+  text-align: center;
+}
+
+.matrix-line.dim {
+  color: rgba(0, 255, 120, 0.3);
+  text-shadow: none;
+}
+
+.matrix-line.bright {
+  color: rgba(0, 255, 180, 0.9);
+  text-shadow: 0 0 6px rgba(0, 255, 180, 0.5), 0 0 12px rgba(0, 255, 180, 0.2);
+}
+
+.matrix-line.speech {
+  color: rgba(0, 212, 255, 0.85);
+  text-shadow: 0 0 6px rgba(0, 212, 255, 0.4), 0 0 12px rgba(0, 212, 255, 0.15);
+  font-weight: 500;
+}
+
+.matrix-line.system {
+  color: rgba(var(--purple), 0.5);
+  text-shadow: 0 0 4px rgba(var(--purple), 0.2);
+  font-size: 8px;
+}
+
+@keyframes matrixFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  8% { opacity: 1; transform: translateY(0); }
+  75% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
 .transcript {
   position: absolute;
   bottom: 2px;
