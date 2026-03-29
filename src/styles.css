@@ -322,6 +322,97 @@ body {
   100% { transform: rotate(610deg) translateX(92px); opacity: 0.2; }
 }
 
+/* ===================== BUBBLES ===================== */
+.bubbles {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.bubble {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    rgba(var(--cyan), 0.25),
+    rgba(var(--cyan), 0.08) 50%,
+    transparent 70%
+  );
+  border: 0.5px solid rgba(var(--cyan), 0.12);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.b1  { width: 6px;  height: 6px;  animation: bubbleRise 8s  ease-in-out 0s    infinite; }
+.b2  { width: 4px;  height: 4px;  animation: bubbleRise 9s  ease-in-out 0.8s  infinite; }
+.b3  { width: 8px;  height: 8px;  animation: bubbleRise 11s ease-in-out 2s    infinite; }
+.b4  { width: 3px;  height: 3px;  animation: bubbleRise 7s  ease-in-out 1.2s  infinite; }
+.b5  { width: 5px;  height: 5px;  animation: bubbleRise 10s ease-in-out 3.5s  infinite; }
+.b6  { width: 7px;  height: 7px;  animation: bubbleRise 12s ease-in-out 5s    infinite; }
+.b7  { width: 4px;  height: 4px;  animation: bubbleRise 8.5s ease-in-out 1.8s infinite; }
+.b8  { width: 5px;  height: 5px;  animation: bubbleRise 9.5s ease-in-out 4.2s infinite; }
+.b9  { width: 3px;  height: 3px;  animation: bubbleRise 7.5s ease-in-out 6s   infinite; }
+.b10 { width: 6px;  height: 6px;  animation: bubbleRise 11s ease-in-out 2.8s  infinite; }
+
+@keyframes bubbleRise {
+  0% {
+    transform: translate(-50%, 0) scale(0.3);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+    transform: translate(calc(-50% + 8px), -10px) scale(0.6);
+  }
+  30% {
+    opacity: 0.8;
+    transform: translate(calc(-50% - 12px), -25px) scale(0.85);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(calc(-50% + 6px), -45px) scale(1);
+  }
+  70% {
+    opacity: 0.4;
+    transform: translate(calc(-50% - 8px), -60px) scale(0.9);
+  }
+  90% {
+    opacity: 0.1;
+    transform: translate(calc(-50% + 4px), -72px) scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80px) scale(0.4);
+  }
+}
+
+/* State-specific bubble colors */
+.hologram.listening .bubble {
+  background: radial-gradient(circle at 30% 30%, rgba(var(--green), 0.3), rgba(var(--green), 0.1) 50%, transparent 70%);
+  border-color: rgba(var(--green), 0.15);
+}
+
+.hologram.thinking .bubble {
+  background: radial-gradient(circle at 30% 30%, rgba(var(--purple), 0.3), rgba(var(--purple), 0.1) 50%, transparent 70%);
+  border-color: rgba(var(--purple), 0.15);
+  animation-duration: 5s !important;
+}
+
+.hologram.speaking .bubble {
+  background: radial-gradient(circle at 30% 30%, rgba(0, 230, 255, 0.35), rgba(var(--cyan), 0.12) 50%, transparent 70%);
+  border-color: rgba(0, 230, 255, 0.2);
+  animation-duration: 4s !important;
+}
+
+body.light .bubble {
+  background: radial-gradient(circle at 30% 30%, rgba(var(--cyan), 0.15), rgba(var(--cyan), 0.05) 50%, transparent 70%);
+  border-color: rgba(var(--cyan), 0.1);
+}
+
 /* ===================== SCANLINES ===================== */
 .scanlines {
   position: absolute;
