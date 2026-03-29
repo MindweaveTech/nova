@@ -7,14 +7,32 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="hologram" class="hologram idle" title="Click to talk (or Option+Space)">
+  <div id="hologram" class="hologram idle">
+    <!-- Ambient glow layers -->
+    <div class="ambient a1"></div>
+    <div class="ambient a2"></div>
+
+    <!-- Rings -->
+    <div class="ring ring-4"></div>
     <div class="ring ring-3"></div>
     <div class="ring ring-2"></div>
     <div class="ring ring-1"></div>
+
+    <!-- Arc segments (Iron Man arc reactor) -->
+    <div class="arc arc-1"></div>
+    <div class="arc arc-2"></div>
+    <div class="arc arc-3"></div>
+
+    <!-- Core -->
     <div class="core">
       <div class="core-inner"></div>
+      <div class="core-flare"></div>
     </div>
+
+    <!-- Pulse -->
     <div class="pulse"></div>
+    <div class="pulse pulse-delayed"></div>
+
     <!-- Orbital particles -->
     <div class="particle p1"></div>
     <div class="particle p2"></div>
@@ -22,8 +40,14 @@
     <div class="particle p4"></div>
     <div class="particle p5"></div>
     <div class="particle p6"></div>
+    <div class="particle p7"></div>
+    <div class="particle p8"></div>
+
+    <!-- Holographic scanline overlay -->
+    <div class="scanlines"></div>
   </div>
   <div id="status" class="status-text">NOVA</div>
+  <div id="usage" class="usage-text">0 queries</div>
   <div id="transcript" class="transcript"></div>
   <script src="renderer.js"></script>
 </body>

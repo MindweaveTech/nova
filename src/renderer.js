@@ -1,19 +1,28 @@
 const hologram = document.getElementById('hologram');
 const statusEl = document.getElementById('status');
+const usageEl = document.getElementById('usage');
 const transcriptEl = document.getElementById('transcript');
 
-let state = 'idle';
+let queryCount = 0;
+
+let state = 'idle'; // idle, monitoring, listening, thinking, speaking, booting, error
 let mediaRecorder = null;
 let audioChunks = [];
 let audioStream = null;
-let silenceTimer = null;
+let audioContext = null;
 let analyser = null;
+let silenceTimer = null;
 let isRecording = false;
-
-const SILENCE_THRESHOLD = 15;
-const SILENCE_DURATION = 1800;
-const MIN_RECORD_TIME = 500;
+let monitoringRAF = null;
 let recordStartTime = 0;
+
+// --- VAD Tuning ---
+const SPEECH_THRESHOLD = 25;     // Level to trigger recording (above background noise)
+const SILENCE_THRESHOLD = 12;    // Level considered silence during recording
+const SILENCE_DURATION = 1500;   // ms of silence to stop recording
+const MIN_RECORD_TIME = 600;     // minimum recording length to process
+const SPEECH_CONFIRM_MS = 150;   // ms of sustained speech before we commit to recording
+let speechConfirmTimer = null;
 
 // --- State Management ---
 
@@ -22,6 +31,7 @@ function setState(newState, statusText) {
   hologram.className = `hologram ${newState}`;
   statusEl.textContent = statusText || {
     idle: 'NOVA',
+    monitoring: 'NOVA',
     booting: 'BOOTING...',
     listening: 'LISTENING',
     thinking: 'THINKING',
@@ -36,13 +46,16 @@ function showTranscript(text, duration) {
   setTimeout(() => { transcriptEl.style.opacity = '0'; }, duration || 4000);
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // --- Boot Sequence ---
 
 async function bootSequence() {
   console.log('[BOOT] Starting Nova boot sequence...');
   setState('booting', 'INITIALIZING');
 
-  // Step 1: Config check
   const config = await window.nova.checkConfig();
   console.log('[BOOT] Config:', JSON.stringify(config));
   if (!config.hasClaude) {
@@ -51,7 +64,6 @@ async function bootSequence() {
     return;
   }
 
-  // Run diagnostics silently while showing booting animation
   console.log('[BOOT] Running diagnostics...');
   setState('booting', 'SCANNING');
   const checks = await window.nova.bootDiagnostics();
@@ -59,14 +71,12 @@ async function bootSequence() {
   const passed = checks.filter(c => c.status === 'pass');
   const failed = checks.filter(c => c.status === 'fail');
 
-  // Log to console only
   console.log('=== NOVA BOOT DIAGNOSTICS ===');
   checks.forEach(c => {
     console.log(`  [${c.status === 'pass' ? 'PASS' : 'FAIL'}] ${c.name}: ${c.detail}`);
   });
   console.log(`=== ${passed.length}/${checks.length} PASSED ===`);
 
-  // One concise spoken summary
   setState('speaking', 'ONLINE');
   if (failed.length === 0) {
     await window.nova.speak('Nova online. All systems in optimal state.');
@@ -74,79 +84,145 @@ async function bootSequence() {
     await window.nova.speak(`Nova online. ${failed.length} systems need attention, but I'm operational.`);
   }
 
-  setState('idle');
+  // After boot, start auto-listening
+  startMonitoring();
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+// =============================================
+// Smart Auto-Listening (Always-on VAD)
+// =============================================
+
+async function initMic() {
+  if (audioStream) return;
+
+  audioStream = await navigator.mediaDevices.getUserMedia({
+    audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+  });
+
+  audioContext = new AudioContext();
+  const source = audioContext.createMediaStreamSource(audioStream);
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 1024;
+  analyser.smoothingTimeConstant = 0.3;
+  source.connect(analyser);
+
+  console.log('[MIC] Microphone initialized');
 }
 
-// --- Audio Capture ---
-
-async function startListening() {
-  if (state === 'listening') return;
-
-  if (state === 'speaking') {
-    await window.nova.stopSpeaking();
+function getAudioLevel() {
+  if (!analyser) return 0;
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  // Weight towards speech frequencies (300Hz - 3kHz)
+  const sampleRate = audioContext.sampleRate;
+  const binSize = sampleRate / analyser.fftSize;
+  const startBin = Math.floor(300 / binSize);
+  const endBin = Math.floor(3000 / binSize);
+  let sum = 0;
+  for (let i = startBin; i < endBin && i < data.length; i++) {
+    sum += data[i];
   }
+  return sum / (endBin - startBin);
+}
 
+// Phase 1: Monitor — mic is hot, watching for speech
+async function startMonitoring() {
   try {
-    if (!audioStream) {
-      audioStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
-      });
-    }
-
-    setState('listening');
-    audioChunks = [];
-    recordStartTime = Date.now();
-
-    const audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(audioStream);
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 512;
-    source.connect(analyser);
-
-    mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm;codecs=opus' });
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) audioChunks.push(e.data);
-    };
-    mediaRecorder.onstop = handleRecordingComplete;
-    mediaRecorder.start(100);
-    isRecording = true;
-
-    detectSilence();
+    await initMic();
   } catch (err) {
-    console.error('Mic access error:', err);
+    console.error('[MIC] Access denied:', err);
     setState('error', 'MIC ERROR');
     setTimeout(() => setState('idle'), 2000);
+    return;
   }
+
+  setState('monitoring');
+  console.log('[VAD] Monitoring started');
+  monitorLoop();
+}
+
+function monitorLoop() {
+  if (state !== 'monitoring') return;
+
+  const level = getAudioLevel();
+
+  if (level >= SPEECH_THRESHOLD) {
+    // Speech detected — wait for confirmation (sustained speech, not a click/bump)
+    if (!speechConfirmTimer) {
+      speechConfirmTimer = setTimeout(() => {
+        speechConfirmTimer = null;
+        if (state === 'monitoring' && getAudioLevel() >= SPEECH_THRESHOLD) {
+          console.log('[VAD] Speech confirmed, recording...');
+          startRecording();
+        }
+      }, SPEECH_CONFIRM_MS);
+    }
+  } else {
+    if (speechConfirmTimer) {
+      clearTimeout(speechConfirmTimer);
+      speechConfirmTimer = null;
+    }
+  }
+
+  monitoringRAF = requestAnimationFrame(monitorLoop);
+}
+
+function stopMonitoring() {
+  if (monitoringRAF) {
+    cancelAnimationFrame(monitoringRAF);
+    monitoringRAF = null;
+  }
+  if (speechConfirmTimer) {
+    clearTimeout(speechConfirmTimer);
+    speechConfirmTimer = null;
+  }
+}
+
+// Phase 2: Record — speech detected, capturing audio
+function startRecording() {
+  stopMonitoring();
+
+  setState('listening');
+  audioChunks = [];
+  recordStartTime = Date.now();
+  isRecording = true;
+
+  mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm;codecs=opus' });
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) audioChunks.push(e.data);
+  };
+  mediaRecorder.onstop = handleRecordingComplete;
+  mediaRecorder.start(100);
+
+  detectSilence();
 }
 
 function detectSilence() {
-  if (!analyser || !isRecording) return;
+  if (!isRecording) return;
 
-  const data = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(data);
-  const avg = data.reduce((a, b) => a + b, 0) / data.length;
+  const level = getAudioLevel();
 
-  if (avg < SILENCE_THRESHOLD) {
+  if (level < SILENCE_THRESHOLD) {
     if (!silenceTimer) {
       silenceTimer = setTimeout(() => {
         if (isRecording && (Date.now() - recordStartTime) > MIN_RECORD_TIME) {
-          stopListening();
+          console.log('[VAD] Silence detected, stopping recording');
+          stopRecording();
         }
       }, SILENCE_DURATION);
     }
   } else {
-    clearTimeout(silenceTimer);
-    silenceTimer = null;
+    // Speech continuing — reset silence timer
+    if (silenceTimer) {
+      clearTimeout(silenceTimer);
+      silenceTimer = null;
+    }
   }
 
   if (isRecording) requestAnimationFrame(detectSilence);
 }
 
-function stopListening() {
+function stopRecording() {
   if (!isRecording) return;
   isRecording = false;
   clearTimeout(silenceTimer);
@@ -157,9 +233,10 @@ function stopListening() {
   }
 }
 
+// Phase 3: Process — transcribe + AI + speak, then back to monitoring
 async function handleRecordingComplete() {
   if (audioChunks.length === 0) {
-    setState('idle');
+    startMonitoring();
     return;
   }
 
@@ -171,17 +248,23 @@ async function handleRecordingComplete() {
 
     const transcript = await window.nova.transcribe(arrayBuffer);
     if (!transcript || transcript.trim().length === 0) {
-      setState('idle');
+      startMonitoring();
       return;
     }
 
+    console.log('[STT] Transcript:', transcript);
     showTranscript(transcript);
+    queryCount++;
+    usageEl.textContent = `${queryCount} ${queryCount === 1 ? 'query' : 'queries'}`;
     await processMessage(transcript);
   } catch (err) {
-    console.error('Processing error:', err);
+    console.error('[PROCESS] Error:', err);
     setState('error', err.message?.substring(0, 30) || 'ERROR');
-    setTimeout(() => setState('idle'), 3000);
+    await sleep(2000);
   }
+
+  // Always return to monitoring after processing
+  startMonitoring();
 }
 
 // --- AI Interaction ---
@@ -225,36 +308,31 @@ async function processMessage(userMessage) {
         }
       }
     }
-
-    setState('idle');
   } catch (err) {
-    console.error('AI error:', err);
+    console.error('[AI] Error:', err);
     setState('error', err.message?.substring(0, 30) || 'ERROR');
-    setTimeout(() => setState('idle'), 3000);
+    await sleep(2000);
   }
 }
 
-// --- Event Handlers ---
+// --- Interrupt: click or hotkey while speaking ---
 
-hologram.addEventListener('click', () => {
-  if (state === 'idle' || state === 'error') {
-    startListening();
-  } else if (state === 'listening') {
-    stopListening();
-  } else if (state === 'speaking') {
+function interrupt() {
+  if (state === 'speaking') {
     window.nova.stopSpeaking();
-    startListening();
+    // Short delay then start listening fresh
+    setTimeout(() => startRecording(), 200);
   }
-});
+}
+
+hologram.addEventListener('click', interrupt);
 
 window.nova.onToggleListen(() => {
-  if (state === 'idle' || state === 'error') {
-    startListening();
-  } else if (state === 'listening') {
-    stopListening();
-  } else if (state === 'speaking') {
-    window.nova.stopSpeaking();
-    startListening();
+  if (state === 'speaking') {
+    interrupt();
+  } else if (state === 'monitoring') {
+    // Force start recording (manual trigger)
+    startRecording();
   }
 });
 
@@ -263,10 +341,10 @@ window.nova.onSpeakingStarted(() => {
 });
 
 window.nova.onSpeakingEnded(() => {
-  if (state === 'speaking') setState('idle');
+  // Don't go back to monitoring here — let the processMessage flow handle it
 });
 
-// --- Init: Run Boot Sequence ---
+// --- Init ---
 
 bootSequence().catch(err => {
   console.error('[BOOT] Fatal error:', err);
