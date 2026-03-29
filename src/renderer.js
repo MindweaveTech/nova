@@ -1,6 +1,5 @@
 const hologram = document.getElementById('hologram');
 const statusEl = document.getElementById('status');
-const usageEl = document.getElementById('usage');
 const matrixLog = document.getElementById('matrix-log');
 const transcriptEl = document.getElementById('transcript');
 
@@ -309,7 +308,6 @@ async function handleRecordingComplete() {
     matrixPush(`"${transcript}"`, 'speech');
     showTranscript(transcript);
     queryCount++;
-    usageEl.textContent = `${queryCount} ${queryCount === 1 ? 'query' : 'queries'}`;
 
     await processMessage(transcript);
   } catch (err) {
@@ -406,6 +404,25 @@ window.nova.onSpeakingStarted(() => {
 });
 
 window.nova.onSpeakingEnded(() => {});
+
+// --- Live Metrics ---
+const mCpu = document.getElementById('m-cpu');
+const mRam = document.getElementById('m-ram');
+const mDisk = document.getElementById('m-disk');
+const mNet = document.getElementById('m-net');
+
+async function updateMetrics() {
+  try {
+    const m = await window.nova.metrics();
+    mCpu.textContent = `CPU ${m.cpu}%`;
+    mRam.textContent = `RAM ${m.ram}%`;
+    mDisk.textContent = `DSK ${m.disk}%`;
+    mNet.textContent = m.net >= 0 ? `NET ${m.net}ms` : `NET --`;
+  } catch {}
+}
+
+updateMetrics();
+setInterval(updateMetrics, 5000);
 
 window.nova.onThemeChange((theme) => {
   document.body.classList.toggle('light', theme === 'light');

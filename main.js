@@ -308,6 +308,34 @@ ipcMain.handle('nova:boot-diagnostics', async () => {
   return await runBootDiagnostics();
 });
 
+ipcMain.handle('nova:metrics', async () => {
+  const cpuUsage = await new Promise((resolve) => {
+    exec("ps -A -o %cpu | awk '{s+=$1} END {printf \"%.0f\", s}'", (err, stdout) => {
+      const total = parseFloat(stdout) || 0;
+      resolve(Math.min(Math.round(total / os.cpus().length), 100));
+    });
+  });
+
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const ramPct = Math.round(((totalMem - freeMem) / totalMem) * 100);
+
+  const disk = await new Promise((resolve) => {
+    exec("df -h / | tail -1 | awk '{print $5}'", (err, stdout) => {
+      resolve(parseInt(stdout) || 0);
+    });
+  });
+
+  const net = await new Promise((resolve) => {
+    exec("ping -c 1 -t 2 8.8.8.8 2>/dev/null | grep time= | sed 's/.*time=\\([0-9.]*\\).*/\\1/'", (err, stdout) => {
+      const ms = parseFloat(stdout);
+      resolve(isNaN(ms) ? -1 : Math.round(ms));
+    });
+  });
+
+  return { cpu: cpuUsage, ram: ramPct, disk, net };
+});
+
 ipcMain.handle('nova:check-config', async () => {
   return {
     hasClaude: !!process.env.ANTHROPIC_API_KEY,

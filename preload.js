@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('nova', {
   execute: (command) => ipcRenderer.invoke('nova:execute', command),
   speak: (text) => ipcRenderer.invoke('nova:speak', text),
   stopSpeaking: () => ipcRenderer.invoke('nova:stop-speaking'),
+  metrics: () => ipcRenderer.invoke('nova:metrics'),
   checkConfig: () => ipcRenderer.invoke('nova:check-config'),
   bootDiagnostics: () => ipcRenderer.invoke('nova:boot-diagnostics'),
 
